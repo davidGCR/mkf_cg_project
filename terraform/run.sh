@@ -1,0 +1,1 @@
+aws glue start-job-run --job-name mkfintermedio-gluejob-v1-executeloadanalytics-3
