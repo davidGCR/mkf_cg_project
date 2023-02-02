@@ -29,14 +29,14 @@ resource "aws_s3_bucket" "mkf_project" {
   bucket = "auna-dl-${var.env}-mkfintermedio"
 }
 
-/* Objeto para subir job script (.py) en S3 */
+/* Objeto para subir job script 1 (.py) en S3 */
 resource "aws_s3_object" "upload_glue_script_1" {
   bucket = aws_s3_bucket.mkf_project.id
   key = "Scripts/${var.script_name_1}"
   source = "${var.script_name_1}"
-  etag = filemd5("${var.script_name}")
+  etag = filemd5("${var.script_name_1}")
 }
-
+/* Objeto para subir job script 3 (.py) en S3 */
 resource "aws_s3_object" "upload_glue_script" {
   bucket = aws_s3_bucket.mkf_project.id
   key = "Scripts/${var.script_name}"
@@ -44,6 +44,13 @@ resource "aws_s3_object" "upload_glue_script" {
   etag = filemd5("${var.script_name}")
 }
 
+/* Objeto para subir job script 4 (.py) en S3 */
+resource "aws_s3_object" "upload_glue_script_4" {
+  bucket = aws_s3_bucket.mkf_project.id
+  key = "Scripts/${var.script_name_4}"
+  source = "${var.script_name_4}"
+  etag = filemd5("${var.script_name_4}")
+}
 
 /* Folder temporal en analytics */
 resource "aws_s3_object" "tmp_folder" {
@@ -53,7 +60,7 @@ resource "aws_s3_object" "tmp_folder" {
 
 /* GLue Job 1*/
 resource "aws_glue_job" "glue_job_1" {
-  name     = "${var.script_name_1}"
+  name     = replace("${var.script_name_1}", ".py", "")
   role_arn = "arn:aws:iam::${local.account_id}:role/auna-dl-${var.env}-full-role"
   command {
     script_location = "s3://${aws_s3_bucket.mkf_project.id}/Scripts/${var.script_name_1}"
@@ -110,7 +117,7 @@ resource "aws_glue_job" "glue_job" {
 
 /* GLue Job 4*/
 resource "aws_glue_job" "glue_job_4" {
-  name     = "${var.script_name_4}"
+  name     = replace("${var.script_name_4}", ".py", "")
   role_arn = "arn:aws:iam::${local.account_id}:role/auna-dl-${var.env}-full-role"
   command {
     script_location = "s3://${aws_s3_bucket.mkf_project.id}/Scripts/${var.script_name_4}"
@@ -121,6 +128,7 @@ resource "aws_glue_job" "glue_job_4" {
   timeout           = var.job_timeout
   number_of_workers = var.number_of_workers
   worker_type       = var.worker_type
+  connections = [ "auna-dl-qa-psql-mkfintermedio" ]
   default_arguments = {
     "--job-language"        = "python"
     "--job-bookmark-option" = "job-bookmark-disable"
